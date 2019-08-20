@@ -41,8 +41,7 @@ namespace Microsoft.MixedReality.Toolkit.Editor
 
         private PressableButton button;
         private Transform transform;
-        private BoxCollider touchCage;
-        private NearInteractionTouchable touchable;
+        private INearInteractionTouchable touchable;
 
         private ButtonInfo currentInfo;
 
@@ -67,8 +66,6 @@ namespace Microsoft.MixedReality.Toolkit.Editor
             button = (PressableButton)target;
             transform = button.transform;
 
-            touchCage = button.GetComponent<BoxCollider>();
-
             if (labelStyle == null)
             {
                 labelStyle = new GUIStyle();
@@ -82,17 +79,12 @@ namespace Microsoft.MixedReality.Toolkit.Editor
             pressDistance = serializedObject.FindProperty("pressDistance");
             releaseDistanceDelta = serializedObject.FindProperty("releaseDistanceDelta");
 
-            touchable = button.GetComponent<NearInteractionTouchable>();
+            touchable = button.GetComponent<INearInteractionTouchable>();
         }
 
         [DrawGizmo(GizmoType.Selected)]
         private void OnSceneGUI()
         {
-            if (touchCage == null)
-            {
-                return;
-            }
-
             if (!VisiblePlanes)
             {
                 return;
@@ -116,7 +108,7 @@ namespace Microsoft.MixedReality.Toolkit.Editor
         {
             ButtonInfo info = new ButtonInfo();
 
-            info.TouchCageLocalBounds = new Bounds(touchCage.center, touchCage.size);
+            info.TouchCageLocalBounds = touchable.LocalTouchCage;
 
             Vector3 pressDirLocal = (touchable != null) ? -1.0f * touchable.LocalForward : Vector3.forward;
             Vector3 upDirLocal = (touchable != null) ? touchable.LocalUp : Vector3.up;
@@ -360,7 +352,7 @@ namespace Microsoft.MixedReality.Toolkit.Editor
 
         private void MakeQuadFromPoint(Vector3[] vertices, Vector3 centerWorld, Vector3 halfExtents, ButtonInfo info)
         {
-            Vector3 touchCageOrigin = touchCage.center;
+            Vector3 touchCageOrigin = touchable.LocalTouchCage.center;
             touchCageOrigin.z = 0.0f;
             vertices[0] = transform.TransformVector(info.PushRotationLocal * (new Vector3(-halfExtents.x, -halfExtents.y, 0.0f) + touchCageOrigin)) + centerWorld;
             vertices[1] = transform.TransformVector(info.PushRotationLocal * (new Vector3(-halfExtents.x, +halfExtents.y, 0.0f) + touchCageOrigin)) + centerWorld;
