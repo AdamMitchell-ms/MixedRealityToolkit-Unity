@@ -19,28 +19,28 @@ namespace Microsoft.MixedReality.Toolkit.Input
 
         public Vector3 Forward => transform.TransformDirection(LocalForward);
 
-        public Vector3 LocalForward => Vector3.forward;
+        public Vector3 LocalForward => -Vector3.forward;
 
         public Vector3 LocalUp => Vector3.up;
 
-        public Bounds LocalTouchCage
-        {
-            get
-            {
-                if (rectTransform == null)
-                {
-                    rectTransform = GetComponent<RectTransform>();
-                    // Start() has not been called yet.  Return reasonable defaults
-                    //return new Bounds(Vector3.zero, Vector3.one);
-                }
-                
-                //else
-                {
-                    var z = Mathf.Max(rectTransform.rect.width, rectTransform.rect.height);
-                    return new Bounds(Vector3.zero, new Vector3(rectTransform.rect.width, rectTransform.rect.height, z));
-                }
-            }
-        }
+        public Vector3 LocalRight => -Vector3.right;
+
+        //TODO: protected?
+        //TODO: does this need to be settable?
+        [SerializeField]
+        protected Vector3 localCenter = Vector3.zero;
+        public Vector3 LocalCenter { get => localCenter; set { localCenter = value; } }
+
+        //TODO: protected?
+        //TODO: settable?
+        //TODO: serializable?  Or just derived from RectTransform?
+
+        /// <summary>
+        /// Local space forward direction
+        /// </summary>
+        [SerializeField]
+        protected Vector2 bounds = Vector2.zero;
+        public Vector2 Bounds { get => bounds; set { bounds = value; } }
 
         private static readonly List<NearInteractionTouchableUnityUI> instances = new List<NearInteractionTouchableUnityUI>();
 
@@ -48,6 +48,9 @@ namespace Microsoft.MixedReality.Toolkit.Input
         void Start()
         {
             rectTransform = GetComponent<RectTransform>();
+            //TODO: Fix up inspector to set these bounds correctly at validate time
+            Bounds = rectTransform.rect.size;
+            Debug.LogWarning($"Near touchable UI - bounds - {rectTransform.rect.size}");
         }
 
         public override float DistanceToTouchable(Vector3 samplePoint, out Vector3 normal)

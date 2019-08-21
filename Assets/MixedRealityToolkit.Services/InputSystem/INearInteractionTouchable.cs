@@ -9,13 +9,13 @@ namespace Microsoft.MixedReality.Toolkit.Input
 {
     public interface INearInteractionTouchable
     {
-
+        Vector3 LocalCenter { get; set; }
         Vector3 LocalForward { get; }
-
         Vector3 LocalUp { get; }
+        Vector3 LocalRight { get; }
 
         Vector3 Forward { get; }
-
-        Bounds LocalTouchCage { get; }
+        Vector2 Bounds { get; set; }
+        Transform transform { get; }
     }
 }
