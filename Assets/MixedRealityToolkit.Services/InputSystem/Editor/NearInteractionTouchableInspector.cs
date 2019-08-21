@@ -9,6 +9,10 @@ using UnityEngine.Serialization;
 
 namespace Microsoft.MixedReality.Toolkit.Input
 {
+    [UnityEditor.CustomEditor(typeof(NearInteractionTouchableUnityUI), true)]
+    public class NearInteractionTouchableUnityUIInspector : NearInteractionTouchableInspector
+    { }
+
     [UnityEditor.CustomEditor(typeof(NearInteractionTouchable), true)]
     public class NearInteractionTouchableInspector : UnityEditor.Editor
     {
@@ -17,8 +21,7 @@ namespace Microsoft.MixedReality.Toolkit.Input
 
         protected virtual void OnSceneGUI()
         {
-            //TODO: Get this working with NearInteractionTouchableUnityUI
-            INearInteractionTouchable t = (INearInteractionTouchable)target;
+            var t = (INearInteractionTouchable)target;
 
             if (Event.current.type == EventType.Repaint)
             {
@@ -46,7 +49,7 @@ namespace Microsoft.MixedReality.Toolkit.Input
         {
             base.OnInspectorGUI();
 
-            INearInteractionTouchable t = (NearInteractionTouchable)target;
+            var t = (INearInteractionTouchable)target;
             var component = (Component)target;
             BoxCollider bc = component.GetComponent<BoxCollider>();
             RectTransform rt = component.GetComponent<RectTransform>();

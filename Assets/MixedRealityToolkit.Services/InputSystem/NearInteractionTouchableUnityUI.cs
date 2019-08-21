@@ -55,7 +55,7 @@ namespace Microsoft.MixedReality.Toolkit.Input
 
         public override float DistanceToTouchable(Vector3 samplePoint, out Vector3 normal)
         {
-            normal = -transform.forward;
+            normal = Forward;
 
             Vector3 localPoint = transform.InverseTransformPoint(samplePoint);
 
@@ -66,10 +66,13 @@ namespace Microsoft.MixedReality.Toolkit.Input
                 return float.PositiveInfinity;
             }
 
-            // Scale back to 3D space
-            localPoint = transform.TransformSize(localPoint);
+            var localDistance = localPoint - LocalCenter;
 
-            return Math.Abs(localPoint.z);
+            // Scale back to 3D space
+            var worldDistance = transform.TransformSize(localDistance);
+
+
+            return Math.Abs(worldDistance.z);
         }
 
         protected void OnEnable()
