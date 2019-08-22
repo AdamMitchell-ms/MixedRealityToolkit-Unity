@@ -167,7 +167,7 @@ MonoBehaviour:
   m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: 329cdefad4cf0f14e9b6767d0af094b0, type: 2}
   m_Color: {r: 1, g: 0, b: 0, a: 0.39215687}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
@@ -257,9 +257,9 @@ MonoBehaviour:
   movingButtonVisuals: {fileID: 3648543948312315415}
   distanceSpaceMode: 1
   startPushDistance: 0
-  maxPushDistance: 0.10541549
-  pressDistance: 0.075921156
-  releaseDistanceDelta: 0.008120276
+  maxPushDistance: 0.07234325
+  pressDistance: 0.060531583
+  releaseDistanceDelta: 0.009273082
   returnSpeed: 25
   releaseOnTouchEnd: 1
   enforceFrontPush: 1
@@ -308,7 +308,7 @@ MonoBehaviour:
   m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: ec72a3a105768f746b556a8dfdae61a8, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
