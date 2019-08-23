@@ -84,7 +84,7 @@ namespace Microsoft.MixedReality.Toolkit.Input
 
         //public Bounds LocalTouchCage => this.TouchableCollider.bounds;
 
-        protected new void OnValidate()
+        protected override void OnValidate()
         {
             if (Application.isPlaying)
             {   // Don't validate during play mode
