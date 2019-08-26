@@ -138,8 +138,6 @@ MonoBehaviour:
   eventsToReceive: 0
   pokeThreshold: 0.25
   debounceThreshold: 0.01
-  localCenter: {x: 0, y: 0, z: 0}
-  bounds: {x: 48, y: 48}
 --- !u!114 &5234426576715676738
 MonoBehaviour:
   m_ObjectHideFlags: 0
