@@ -53,13 +53,10 @@ namespace Microsoft.MixedReality.Toolkit.Input
                 return float.PositiveInfinity;
             }
 
-            var localDistance = localPoint - LocalCenter;
-
             // Scale back to 3D space
-            var worldDistance = transform.TransformSize(localDistance);
+            localPoint = transform.TransformSize(localPoint);
 
-
-            return Math.Abs(worldDistance.z);
+            return Math.Abs(localPoint.z);
         }
 
         protected void OnEnable()
