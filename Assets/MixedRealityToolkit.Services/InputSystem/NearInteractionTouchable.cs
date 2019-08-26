@@ -13,8 +13,6 @@ namespace Microsoft.MixedReality.Toolkit.Input
     /// </summary>
     public class NearInteractionTouchable : ColliderNearInteractionTouchable, INearInteractionTouchable
     {
-        //TODO: why have the 3 directions?  This can all be described with a single quaternion.
-
         /// <summary>
         /// Local space forward direction
         /// </summary>
@@ -81,8 +79,6 @@ namespace Microsoft.MixedReality.Toolkit.Input
         [SerializeField]
         protected Vector2 bounds = Vector2.zero;
         public Vector2 Bounds { get => bounds; set { bounds = value; } }
-
-        //public Bounds LocalTouchCage => this.TouchableCollider.bounds;
 
         protected override void OnValidate()
         {

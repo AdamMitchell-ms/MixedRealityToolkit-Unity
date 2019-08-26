@@ -187,7 +187,7 @@ namespace Microsoft.MixedReality.Toolkit.UI
         public bool IsPressing { get; private set; }
 
         /// <summary>
-        /// The press direction of the button as defined by a NearInteractionTouchable.
+        /// The press direction of the button as defined by an INearInteractionTouchable.
         /// </summary>
         private Vector3 WorldSpacePressDirection
         {

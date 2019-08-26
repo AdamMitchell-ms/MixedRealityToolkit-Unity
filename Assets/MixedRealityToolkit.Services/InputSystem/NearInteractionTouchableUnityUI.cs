@@ -25,32 +25,19 @@ namespace Microsoft.MixedReality.Toolkit.Input
 
         public Vector3 LocalRight => -Vector3.right;
 
-        //TODO: protected?
-        //TODO: does this need to be settable?
         [SerializeField]
-        protected Vector3 localCenter = Vector3.zero;
-        public Vector3 LocalCenter { get => localCenter; set { localCenter = value; } }
+        private Vector3 localCenter = Vector3.zero;
+        public Vector3 LocalCenter => localCenter;
 
-        //TODO: protected?
-        //TODO: settable?
-        //TODO: serializable?  Or just derived from RectTransform?
-
-        /// <summary>
-        /// Local space forward direction
-        /// </summary>
-        [SerializeField]
-        protected Vector2 bounds = Vector2.zero;
-        public Vector2 Bounds { get => bounds; set { bounds = value; } }
+        public Vector2 Bounds => rectTransform.rect.size;
 
         private static readonly List<NearInteractionTouchableUnityUI> instances = new List<NearInteractionTouchableUnityUI>();
 
-        /// <inheritdoc />
-        void Start()
+        protected override void OnValidate()
         {
+            base.OnValidate();
+
             rectTransform = GetComponent<RectTransform>();
-            //TODO: Fix up inspector to set these bounds correctly at validate time
-            Bounds = rectTransform.rect.size;
-            Debug.LogWarning($"Near touchable UI - bounds - {rectTransform.rect.size}");
         }
 
         public override float DistanceToTouchable(Vector3 samplePoint, out Vector3 normal)
