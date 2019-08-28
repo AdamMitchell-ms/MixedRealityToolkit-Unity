@@ -84,7 +84,6 @@ namespace Microsoft.MixedReality.Toolkit.Tests
         private Vector3 rightPosition = new Vector3(1f, 0f, 1f);
         private Vector3 backPosition = new Vector3(0f, 0f, 2f);
         private Vector3 outOfBoundsOffset = new Vector3(0.15f, 0f, 0f);
-        private Vector3 touchNormal = new Vector3(0, 0, -1);
 
         private Material idleMaterial;
         private Material pokeMaterial;
@@ -150,7 +149,6 @@ namespace Microsoft.MixedReality.Toolkit.Tests
         public IEnumerator NearInteractionTouchableVariant()
         {
             var touchable = CreateTouchable<NearInteractionTouchable>(objectScale);
-            touchable.SetLocalForward(touchNormal);
             touchable.Bounds = new Vector2(0.5f, 0.5f);
 
             yield return new WaitForFixedUpdate();
@@ -299,7 +297,6 @@ namespace Microsoft.MixedReality.Toolkit.Tests
                 Vector3 r = GetRandomPoint(i);
 
                 touchables[i] = CreateTouchable<NearInteractionTouchable>(0.15f);
-                touchables[i].SetLocalForward(touchNormal);
                 touchables[i].Bounds = new Vector2(0.5f, 0.5f);
                 touchables[i].transform.position = objectPosition + new Vector3(0.02f * r.x, 0.015f * r.y, 0.1f * i - 0.5f);
 
@@ -351,7 +348,6 @@ namespace Microsoft.MixedReality.Toolkit.Tests
                 Vector3 r = GetRandomPoint(i);
 
                 touchables[i] = CreateTouchable<NearInteractionTouchable>(0.15f);
-                touchables[i].SetLocalForward(touchNormal);
                 touchables[i].Bounds = new Vector2(0.5f, 0.5f);
                 touchables[i].transform.position = objectPosition + r * radiusStart;
 

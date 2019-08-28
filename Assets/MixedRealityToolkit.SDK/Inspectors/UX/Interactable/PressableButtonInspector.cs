@@ -20,9 +20,6 @@ namespace Microsoft.MixedReality.Toolkit.Editor
             public Vector3 LocalCenter;
             public Vector2 PlaneExtents;
 
-            // The rotation of the push space.
-            public Quaternion PushRotationLocal;
-
             // The actual values that the button uses
             public float StartPushDistance;
             public float MaxPushDistance;
@@ -111,11 +108,6 @@ namespace Microsoft.MixedReality.Toolkit.Editor
             info.LocalCenter = touchable.LocalCenter;
             info.PlaneExtents = touchable.Bounds;
 
-            Vector3 pressDirLocal = (touchable != null) ? -1.0f * touchable.LocalForward : Vector3.forward;
-            Vector3 upDirLocal = (touchable != null) ? touchable.LocalUp : Vector3.up;
-
-            info.PushRotationLocal = Quaternion.LookRotation(pressDirLocal, upDirLocal);
-            
             info.StartPushDistance = startPushDistance.floatValue;
             info.MaxPushDistance = maxPushDistance.floatValue;
             info.PressDistance = pressDistance.floatValue;
@@ -224,8 +216,7 @@ namespace Microsoft.MixedReality.Toolkit.Editor
             {
                 float handleSize = HandleUtility.GetHandleSize(vertices[1]) * 0.15f;
 
-                Vector3 dir = (touchable != null) ? -1.0f * touchable.LocalForward : Vector3.forward;
-                Vector3 planeNormal = button.transform.TransformDirection(dir);
+                Vector3 planeNormal = button.transform.TransformDirection(Vector3.forward);
                 Handles.ArrowHandleCap(0, vertices[1], Quaternion.LookRotation(planeNormal), handleSize * 2, EventType.Repaint);
                 Handles.ArrowHandleCap(0, vertices[1], Quaternion.LookRotation(-planeNormal), handleSize * 2, EventType.Repaint);
 
@@ -315,8 +306,9 @@ namespace Microsoft.MixedReality.Toolkit.Editor
             mouseRay.direction = button.transform.InverseTransformDirection(mouseRay.direction);
             mouseRay.origin = button.transform.InverseTransformPoint(mouseRay.origin);
 
+            //TODO: do we need this inversion?
             // Transform to plane space, which transform the plane into the XY plane.
-            Quaternion quadRotationInverse = Quaternion.Inverse(info.PushRotationLocal);
+            Quaternion quadRotationInverse = Quaternion.Inverse(Quaternion.identity);
             mouseRay.direction = quadRotationInverse * mouseRay.direction;
             mouseRay.origin = quadRotationInverse * (mouseRay.origin - centerLocal);
 
@@ -349,10 +341,10 @@ namespace Microsoft.MixedReality.Toolkit.Editor
         {
             Vector3 touchCageOrigin = touchable.LocalCenter;
             touchCageOrigin.z = 0.0f;
-            vertices[0] = transform.TransformVector(info.PushRotationLocal * (new Vector3(-halfExtents.x, -halfExtents.y, 0.0f) + touchCageOrigin)) + centerWorld;
-            vertices[1] = transform.TransformVector(info.PushRotationLocal * (new Vector3(-halfExtents.x, +halfExtents.y, 0.0f) + touchCageOrigin)) + centerWorld;
-            vertices[2] = transform.TransformVector(info.PushRotationLocal * (new Vector3(+halfExtents.x, +halfExtents.y, 0.0f) + touchCageOrigin)) + centerWorld;
-            vertices[3] = transform.TransformVector(info.PushRotationLocal * (new Vector3(+halfExtents.x, -halfExtents.y, 0.0f) + touchCageOrigin)) + centerWorld;
+            vertices[0] = transform.TransformVector(new Vector3(-halfExtents.x, -halfExtents.y, 0.0f) + touchCageOrigin) + centerWorld;
+            vertices[1] = transform.TransformVector(new Vector3(-halfExtents.x, +halfExtents.y, 0.0f) + touchCageOrigin) + centerWorld;
+            vertices[2] = transform.TransformVector(new Vector3(+halfExtents.x, +halfExtents.y, 0.0f) + touchCageOrigin) + centerWorld;
+            vertices[3] = transform.TransformVector(new Vector3(+halfExtents.x, -halfExtents.y, 0.0f) + touchCageOrigin) + centerWorld;
         }
     }
 }
