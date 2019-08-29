@@ -189,19 +189,7 @@ namespace Microsoft.MixedReality.Toolkit.UI
         /// <summary>
         /// The press direction of the button as defined by an INearInteractionTouchable.
         /// </summary>
-        private Vector3 WorldSpacePressDirection
-        {
-            get
-            {
-                var nearInteractionTouchable = GetComponent<INearInteractionTouchable>();
-                if (nearInteractionTouchable != null)
-                {
-                    return -1.0f * nearInteractionTouchable.Forward;
-                }
-                
-                return transform.forward;
-            }
-        }
+        private Vector3 WorldSpacePressDirection => transform.forward;
 
         private Transform PushSpaceSourceTransform
         {
