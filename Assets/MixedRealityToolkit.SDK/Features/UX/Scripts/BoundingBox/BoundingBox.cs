@@ -12,6 +12,60 @@ using UnityPhysics = UnityEngine.Physics;
 
 namespace Microsoft.MixedReality.Toolkit.UI
 {
+    public static class TransformExtensions
+    {
+        public static IEnumerable<Transform> GetChildren(this Transform @this)
+        {
+            for (int i = 0; i < @this.childCount; i++)
+            {
+                yield return @this.GetChild(i);
+            }
+        }
+    }
+
+    public static class BoundsCalculationMethodExtensions
+    {
+        public static bool RendererAllowed(this BoundingBox.BoundsCalculationMethod @this)
+        {
+            switch (@this)
+            {
+                case BoundingBox.BoundsCalculationMethod.RendererOnly:
+                case BoundingBox.BoundsCalculationMethod.RendererOverCollider:
+                case BoundingBox.BoundsCalculationMethod.ColliderOverRenderer:
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        public static bool ColliderAllowed(this BoundingBox.BoundsCalculationMethod @this)
+        {
+            switch (@this)
+            {
+                case BoundingBox.BoundsCalculationMethod.ColliderOnly:
+                case BoundingBox.BoundsCalculationMethod.ColliderOverRenderer:
+                case BoundingBox.BoundsCalculationMethod.RendererOverCollider:
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        public static bool RectTransformAllowed(this BoundingBox.BoundsCalculationMethod @this)
+        {
+            switch (@this)
+            {
+                case BoundingBox.BoundsCalculationMethod.RectTransformOnly:
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+    }
+
     [HelpURL("https://microsoft.github.io/MixedRealityToolkit-Unity/Documentation/README_BoundingBox.html")]
     public class BoundingBox : MonoBehaviour,
         IMixedRealitySourceStateHandler,
@@ -101,6 +155,7 @@ namespace Microsoft.MixedReality.Toolkit.UI
             /// Omits Colliders and uses Renderers for the bounds calculation exclusively
             /// </summary>
             RendererOnly,
+            RectTransformOnly,
         }
 
         /// <summary>
@@ -1187,11 +1242,33 @@ namespace Microsoft.MixedReality.Toolkit.UI
                     UpdateBounds();
                     UpdateRigHandles();
                 }
-                else if (!isChildOfTarget && Target.transform.hasChanged)
+                else if (isChildOfTarget)
                 {
-                    UpdateBounds();
-                    UpdateRigHandles();
-                    Target.transform.hasChanged = false;
+                    bool hasChanged = false;
+                    foreach (var child in Target.transform.GetChildren())
+                    {
+                        if (child.hasChanged)
+                        {
+                            hasChanged = true;
+                        }
+                        child.hasChanged = false;
+                    }
+
+                    if (hasChanged)
+                    {
+                        UpdateBounds();
+                        UpdateRigHandles();
+                        Target.transform.hasChanged = false;
+                    }
+                }
+                else
+                {
+                    if (Target.transform.hasChanged)
+                    {
+                        UpdateBounds();
+                        UpdateRigHandles();
+                        Target.transform.hasChanged = false;
+                    }
                 }
 
 
@@ -1706,6 +1783,8 @@ namespace Microsoft.MixedReality.Toolkit.UI
         {
             KeyValuePair<Transform, Collider> colliderByTransform;
             KeyValuePair<Transform, Bounds> rendererBoundsByTransform;
+            KeyValuePair<Transform, Bounds> rectTransformBoundsByTransform;
+            //(Transform, Bounds) rectTransformBoundsByTransform;
             totalBoundsCorners.Clear();
 
             // Collect all Transforms except for the rigRoot(s) transform structure(s)
@@ -1718,7 +1797,10 @@ namespace Microsoft.MixedReality.Toolkit.UI
 
             foreach (Transform childTransform in Target.transform)
             {
-                if (childTransform.name.Equals(rigRootName)) { continue; }
+                if (childTransform.name.Equals(rigRootName))
+                {
+                    continue;
+                }
                 childTransforms.AddRange(childTransform.GetComponentsInChildren<Transform>());
             }
 
@@ -1728,7 +1810,7 @@ namespace Microsoft.MixedReality.Toolkit.UI
             {
                 Debug.Assert(childTransform != rigRoot);
 
-                if (boundsCalculationMethod != BoundsCalculationMethod.RendererOnly)
+                if (boundsCalculationMethod.ColliderAllowed())
                 {
                     Collider collider = childTransform.GetComponent<Collider>();
                     if (collider != null)
@@ -1741,9 +1823,10 @@ namespace Microsoft.MixedReality.Toolkit.UI
                     }
                 }
 
-                if (boundsCalculationMethod != BoundsCalculationMethod.ColliderOnly)
+                if (boundsCalculationMethod.RendererAllowed())
                 {
                     MeshFilter meshFilter = childTransform.GetComponent<MeshFilter>();
+
                     if (meshFilter != null && meshFilter.sharedMesh != null)
                     {
                         rendererBoundsByTransform = new KeyValuePair<Transform, Bounds>(childTransform, meshFilter.sharedMesh.bounds);
@@ -1754,21 +1837,43 @@ namespace Microsoft.MixedReality.Toolkit.UI
                     }
                 }
 
+                if (boundsCalculationMethod.RectTransformAllowed())
+                {
+                    var rectTransform = childTransform.GetComponent<RectTransform>();
+                    if (rectTransform != null)
+                    {
+                        rectTransformBoundsByTransform = new KeyValuePair<Transform, Bounds>(childTransform, new Bounds(Vector3FromVector2(rectTransform.rect.center, 0.0f), Vector3FromVector2(rectTransform.rect.size, 0.0f)));
+                        //rectTransformBoundsByTransform = (childTransform, new Bounds(Vector3FromVector2(rectTransform.rect.center, 0.0f), Vector3FromVector2(rectTransform.rect.size, 0.0f)));
+                    }
+                }
+
+                if (boundsCalculationMethod == BoundsCalculationMethod.RectTransformOnly)
+                {
+                    AddBoundsToTarget(rectTransformBoundsByTransform);
+                    continue;
+                }
+
                 // Encapsulate the collider bounds if criteria match
 
                 if (boundsCalculationMethod == BoundsCalculationMethod.ColliderOnly ||
                     boundsCalculationMethod == BoundsCalculationMethod.ColliderOverRenderer)
                 {
                     AddColliderBoundsToTarget(colliderByTransform);
-                    if (boundsCalculationMethod == BoundsCalculationMethod.ColliderOnly) { continue; }
+                    if (boundsCalculationMethod == BoundsCalculationMethod.ColliderOnly)
+                    {
+                        continue;
+                    }
                 }
 
                 // Encapsulate the renderer bounds if criteria match
 
-                if (boundsCalculationMethod != BoundsCalculationMethod.ColliderOnly)
+                if (boundsCalculationMethod.RendererAllowed())
                 {
-                    AddRendererBoundsToTarget(rendererBoundsByTransform);
-                    if (boundsCalculationMethod == BoundsCalculationMethod.RendererOnly) { continue; }
+                    AddBoundsToTarget(rendererBoundsByTransform);
+                    if (boundsCalculationMethod == BoundsCalculationMethod.RendererOnly)
+                    {
+                        continue;
+                    }
                 }
 
                 // Do the collider for the one case that we chose RendererOverCollider and did not find a renderer
@@ -1789,13 +1894,23 @@ namespace Microsoft.MixedReality.Toolkit.UI
             return finalBounds;
         }
 
-        private void AddRendererBoundsToTarget(KeyValuePair<Transform, Bounds> rendererBoundsByTarget)
+        private static Vector3 Vector3FromVector2(Vector2 v, float z)
         {
-            if (rendererBoundsByTarget.Key == null) { return; }
+            return new Vector3(v.x, v.y, z);
+        }
+
+        private void AddBoundsToTarget(Transform transform, Bounds bounds)
+        {
+            if (transform == null) { return; }
 
             Vector3[] cornersToWorld = null;
-            rendererBoundsByTarget.Value.GetCornerPositions(rendererBoundsByTarget.Key, ref cornersToWorld);
+            bounds.GetCornerPositions(transform, ref cornersToWorld);
             totalBoundsCorners.AddRange(cornersToWorld);
+        }
+
+        private void AddBoundsToTarget(KeyValuePair<Transform, Bounds> rendererBoundsByTarget)
+        {
+            AddBoundsToTarget(rendererBoundsByTarget.Key, rendererBoundsByTarget.Value);
         }
 
         private void AddColliderBoundsToTarget(KeyValuePair<Transform, Collider> colliderByTransform)
