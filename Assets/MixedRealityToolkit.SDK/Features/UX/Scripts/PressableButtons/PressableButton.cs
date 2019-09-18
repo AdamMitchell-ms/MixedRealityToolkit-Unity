@@ -274,6 +274,15 @@ namespace Microsoft.MixedReality.Toolkit.UI
 
             movingVisualsInitialLocalPosition = movingButtonVisuals.transform.localPosition;
 
+            var worldDelta = movingButtonVisuals.transform.parent.TransformSize(movingVisualsInitialLocalPosition);
+            var worldSize = worldDelta.magnitude;
+
+            Debug.Log($"PressableButton - {gameObject.name} - {GetInstanceID()} - Start - {PrintVector(movingVisualsInitialLocalPosition)} - {PrintVector(worldDelta)} - {worldSize}");
+        }
+
+        private static string PrintVector(Vector3 v)
+        {
+            return $"({v.x:0.00000}, {v.y:0.00000}, {v.z:0.00000})";
         }
 
         void OnDisable()
@@ -444,6 +453,8 @@ namespace Microsoft.MixedReality.Toolkit.UI
             {
                 // Always move relative to startPushDistance
                 movingButtonVisuals.transform.position = GetWorldPositionAlongPushDirection(currentPushDistance - startPushDistance);
+
+                Debug.Log($"PressableButton - {gameObject.name} - {GetInstanceID()} - UpdateMovingVisualsPosition - {PrintVector(movingButtonVisuals.transform.localPosition)} | {currentPushDistance} - {startPushDistance} = {currentPushDistance - startPushDistance}");
             }
         }
 
