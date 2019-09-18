@@ -235,10 +235,10 @@ namespace Microsoft.MixedReality.Toolkit.UI
         /// <summary>
         /// Initial offset from moving visuals to button
         /// </summary>
-        private Vector3 initialOffsetMovingVisuals = Vector3.zero;
+        private Vector3 movingVisualsInitialLocalPosition = Vector3.zero;
 
         /// <summary>
-        /// The position from where the button starts to move. 
+        /// The position from where the button starts to move.  Projected into world space based on the button's current world space position.
         /// </summary>
         private Vector3 InitialPosition
         {
@@ -246,7 +246,7 @@ namespace Microsoft.MixedReality.Toolkit.UI
             {
                 if (Application.isPlaying && movingButtonVisuals) // we're using a cached position in play mode as the moving visuals will be moved during button interaction
                 {
-                    return PushSpaceSourceParentPosition + initialOffsetMovingVisuals;
+                    return PushSpaceSourceParentPosition + movingButtonVisuals.transform.TransformVector(movingVisualsInitialLocalPosition);
                 }
                 else
                 {
@@ -272,7 +272,8 @@ namespace Microsoft.MixedReality.Toolkit.UI
                 Debug.LogWarning("PressableButton will not work if game object layer is set to 'Ignore Raycast'.");
             }
 
-            initialOffsetMovingVisuals = PushSpaceSourceTransform.position - PushSpaceSourceParentPosition;
+            movingVisualsInitialLocalPosition = movingButtonVisuals.transform.localPosition;
+
         }
 
         void OnDisable()
@@ -460,7 +461,6 @@ namespace Microsoft.MixedReality.Toolkit.UI
 
             return Mathf.Clamp(farthestDistance, startPushDistance, maxPushDistance);
         }
-
 
         private void UpdatePressedState(float pushDistance)
         {
