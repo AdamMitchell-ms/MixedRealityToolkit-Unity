@@ -18,6 +18,8 @@ namespace Microsoft.MixedReality.Toolkit.UI
     {
         const string InitialMarkerTransformName = "Initial Marker";
 
+        bool hasStarted = false;
+
         /// <summary>
         /// The object that is being pushed.
         /// </summary>
@@ -252,7 +254,6 @@ namespace Microsoft.MixedReality.Toolkit.UI
                 {
                     return PushSpaceSourceTransform.position;
                 }
-
             }
         }
 
@@ -267,6 +268,8 @@ namespace Microsoft.MixedReality.Toolkit.UI
 
         protected virtual void Start()
         {
+            hasStarted = true;
+
             if (gameObject.layer == 2)
             {
                 Debug.LogWarning("PressableButton will not work if game object layer is set to 'Ignore Raycast'.");
@@ -278,6 +281,8 @@ namespace Microsoft.MixedReality.Toolkit.UI
             var worldSize = worldDelta.magnitude;
 
             Debug.Log($"PressableButton - {gameObject.name} - {GetInstanceID()} - Start - {PrintVector(movingVisualsInitialLocalPosition)} - {PrintVector(worldDelta)} - {worldSize}");
+            // Ensure everything is set to initial positions correctly.
+            UpdateMovingVisualsPosition();
         }
 
         private static string PrintVector(Vector3 v)
@@ -291,9 +296,12 @@ namespace Microsoft.MixedReality.Toolkit.UI
             touchPoints.Clear();
             currentInputSources.Clear();
 
-            // make sure button doesn't stay in a pressed state in case we disable the button while pressing it
-            currentPushDistance = startPushDistance;
-            UpdateMovingVisualsPosition();
+            if (hasStarted)
+            {
+                // make sure button doesn't stay in a pressed state in case we disable the button while pressing it
+                currentPushDistance = startPushDistance;
+                UpdateMovingVisualsPosition();
+            }
         }
 
         private void Update()
