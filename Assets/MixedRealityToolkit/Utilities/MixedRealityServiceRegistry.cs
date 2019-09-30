@@ -213,6 +213,8 @@ namespace Microsoft.MixedReality.Toolkit
 
             allServicesByRegistrar[registrar].Add(service);
             allServicesByRegistrar[registrar].Sort(ascendingOrderComparer);
+
+            ServiceAdded?.Invoke(service);
         }
 
         /// <summary>
@@ -222,6 +224,8 @@ namespace Microsoft.MixedReality.Toolkit
             IMixedRealityService service,
             IMixedRealityServiceRegistrar registrar)
         {
+            ServiceBeforeRemoved?.Invoke(service);
+
             // Removing from the sorted list keeps sort order, so re-sorting isn't necessary
             allServices.Remove(service);
             if (allServicesByRegistrar.ContainsKey(registrar))
@@ -233,6 +237,9 @@ namespace Microsoft.MixedReality.Toolkit
                 }
             }
         }
+
+        public static event Action<IMixedRealityService> ServiceAdded;
+        public static event Action<IMixedRealityService> ServiceBeforeRemoved;
 
         /// <summary>
         /// Gets the first instance of the requested service from the registry that matches the given query.
@@ -380,6 +387,11 @@ namespace Microsoft.MixedReality.Toolkit
         {
             if (registry != null)
             {
+                foreach (var service in allServices)
+                {
+                    ServiceBeforeRemoved?.Invoke(service);
+                }
+
                 registry.Clear();
                 allServices.Clear();
                 allServicesByRegistrar.Clear();

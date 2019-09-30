@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -31,7 +32,52 @@ namespace Microsoft.MixedReality.Toolkit.Input
             }
         }
 
-        private IMixedRealityInputSystem inputSystem = null;
+        //HACK HACK HACK
+        static List<MixedRealityInputModule> instances = new List<MixedRealityInputModule>();
+
+        public static void Reactivate()
+        {
+            foreach (var instance in instances)
+            {
+                instance.DoDeactivate();
+                instance.DoActivate();
+            }
+        }
+
+        public MixedRealityInputModule()
+        {
+            MixedRealityServiceRegistry.ServiceAdded += MixedRealityServiceRegistry_ServiceAdded;
+            MixedRealityServiceRegistry.ServiceBeforeRemoved += MixedRealityServiceRegistry_ServiceBeforeRemoved;
+            instances.Add(this);
+        }
+
+        private void MixedRealityServiceRegistry_ServiceBeforeRemoved(IMixedRealityService service)
+        {
+            if (everActivated && service is IMixedRealityInputSystem)
+            {
+                //DeactivateModule();
+            }
+        }
+
+        private void MixedRealityServiceRegistry_ServiceAdded(IMixedRealityService service)
+        {
+            if (everActivated && service is IMixedRealityInputSystem)
+            {
+                //ActivateModule();
+                //DoDeactivate();
+                //DoActivate();
+                StartCoroutine(ReactivateCoroutine());
+            }
+        }
+
+        private IEnumerator ReactivateCoroutine()
+        {
+            yield return new WaitForSeconds(0.5f);
+            DoDeactivate();
+            DoActivate();
+        }
+
+        //private IMixedRealityInputSystem inputSystem = null;
 
         /// <summary>
         /// The active instance of the input system.
@@ -40,11 +86,14 @@ namespace Microsoft.MixedReality.Toolkit.Input
         {
             get
             {
-                if (inputSystem == null)
-                {
-                    MixedRealityServiceRegistry.TryGetService<IMixedRealityInputSystem>(out inputSystem);
-                }
+                MixedRealityServiceRegistry.TryGetService<IMixedRealityInputSystem>(out var inputSystem);
                 return inputSystem;
+
+                //if (inputSystem == null)
+                //{
+                //    MixedRealityServiceRegistry.TryGetService<IMixedRealityInputSystem>(out inputSystem);
+                //}
+                //return inputSystem;
             }
         }
 
@@ -71,11 +120,18 @@ namespace Microsoft.MixedReality.Toolkit.Input
             }
         }
 
+        private bool everActivated = false;
+
         /// <inheritdoc />
         public override void ActivateModule()
         {
             base.ActivateModule();
 
+            DoActivate();
+        }
+
+        private void DoActivate()
+        {
             if (InputSystem != null)
             {
                 RaycastCamera = InputSystem.FocusProvider.UIRaycastCamera;
@@ -88,10 +144,19 @@ namespace Microsoft.MixedReality.Toolkit.Input
                 InputSystem.RegisterHandler<IMixedRealityPointerHandler>(this);
                 InputSystem.RegisterHandler<IMixedRealitySourceStateHandler>(this);
             }
+
+            everActivated = true;
         }
 
         /// <inheritdoc />
         public override void DeactivateModule()
+        {
+            DoDeactivate();
+
+            base.DeactivateModule();
+        }
+
+        private void DoDeactivate()
         {
             if (InputSystem != null)
             {
@@ -109,8 +174,6 @@ namespace Microsoft.MixedReality.Toolkit.Input
             }
 
             RaycastCamera = null;
-
-            base.DeactivateModule();
         }
 
         /// <summary>
@@ -155,7 +218,7 @@ namespace Microsoft.MixedReality.Toolkit.Input
                 Cursor.lockState = cursorLockStateBackup;
             }
 
-            base.Process();
+            //base.Process();
         }
 
         private void ProcessMrtkPointerLost(PointerData pointerData)
